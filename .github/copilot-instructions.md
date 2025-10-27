@@ -28,26 +28,26 @@ The project uses SQLite in-memory database with these tables:
 - `id` (INTEGER): Employee ID
 - `name` (TEXT): Employee name
 - `department` (TEXT): Department name
-- `salary` (INTEGER): Annual salary
+- `salary` (REAL): Annual salary
 - `hire_date` (TEXT): Hire date
 - `manager_id` (INTEGER): Manager's employee ID
 
 ### departments
 - `id` (INTEGER): Department ID
 - `name` (TEXT): Department name
-- `budget` (INTEGER): Department budget
+- `budget` (REAL): Department budget
 
 ### projects
 - `id` (INTEGER): Project ID
 - `name` (TEXT): Project name
 - `department_id` (INTEGER): Associated department
-- `budget` (INTEGER): Project budget
+- `budget` (REAL): Project budget
 - `start_date` (TEXT): Project start date
 
 ### assignments
 - `employee_id` (INTEGER): Employee assigned
 - `project_id` (INTEGER): Project assigned to
-- `hours` (INTEGER): Hours allocated
+- `hours` (REAL): Hours allocated
 
 ## Code Style Guidelines
 
