@@ -1,0 +1,29 @@
+{
+  "name": "sqlkoans",
+  "version": "1.0.0",
+  "description": "Learn SQL through practice - A Koans-inspired interactive tutorial",
+  "main": "runner.js",
+  "scripts": {
+    "test": "node runner.js",
+    "progress": "node runner.js --progress",
+    "hint": "node runner.js --hint"
+  },
+  "keywords": [
+    "sql",
+    "learning",
+    "tutorial",
+    "koans",
+    "sqlite",
+    "practice",
+    "education"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "sql.js": "^1.12.0",
+    "chalk": "^4.1.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
