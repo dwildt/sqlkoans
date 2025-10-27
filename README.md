@@ -144,6 +144,7 @@ Keep going! Fix the remaining koans to complete this lesson.
 - [SQL Tutorial on W3Schools](https://www.w3schools.com/sql/)
 - [SQLite Documentation](https://www.sqlite.org/docs.html)
 - [Window Functions Explained](https://www.sqlite.org/windowfunctions.html)
+- [JS Koans](https://github.com/dwildt/jskoans) - Learn JavaScript and TypeScript through practice
 
 ## 💖 Support This Project
 
@@ -179,6 +180,7 @@ MIT License - See LICENSE file for details
 Inspired by:
 - [Ruby Koans](http://rubykoans.com/) - The original Koans concept
 - [JavaScript Koans](https://github.com/mrdavidlaing/javascript-koans)
+- [JS Koans](https://github.com/dwildt/jskoans) - A similar project for learning JavaScript and TypeScript
 - The philosophy of learning through practice
 
 ---
