@@ -16,6 +16,7 @@ Perfect for developers who want to:
 
 - **10 Progressive Lessons**: From SELECT basics to Window Functions
 - **Instant Feedback**: See immediately if your queries are correct
+- **Bilingual Support**: Learn in English or Portuguese (configurable with `--lang` parameter)
 - **SQLite In-Memory**: Fast, isolated tests with no setup required
 - **Realistic Data**: Practice with employees, departments, projects, and assignments
 - **Colorful CLI**: Clear, motivating visual feedback
@@ -78,14 +79,23 @@ npm test 01    # Run lesson 01
 npm test 5     # Run lesson 05
 ```
 
+### Language options
+```bash
+npm test 01 --lang=en    # Run in English (default)
+npm test 01 --lang=pt    # Run in Portuguese / Executar em Português
+npm test --lang=pt       # Run all lessons in Portuguese
+```
+
 ### View progress
 ```bash
 npm run progress
+npm run progress --lang=pt    # View progress in Portuguese
 ```
 
 ### Get hints
 ```bash
-npm run hint 01 2    # Get hint for lesson 01, koan 2
+npm run hint 01 2              # Get hint for lesson 01, koan 2
+npm run hint 01 2 --lang=pt    # Get hint in Portuguese
 ```
 
 ## 📊 Database Schema
@@ -113,15 +123,39 @@ The koans use four related tables:
 ```
 🧘 SQL Koans - Path to Enlightenment
 
-✓ 01 - SELECT Básico
-  ✓ Koan 1: Selecionar todos os funcionários
-  ✓ Koan 2: Selecionar apenas nome e salário
-  ✗ Koan 3: Departamentos únicos
+✓ 01 - SELECT Basics
+  ✓ Koan 1: Select all employees
+  ✓ Koan 2: Select only name and salary
+  ✗ Koan 3: Unique departments
     Expected 4 unique departments, got 10 rows with duplicates
     💡 Hint: Use SELECT DISTINCT department FROM employees
 
 Progress: 2/3 koans completed (67%)
 Keep going! Fix the remaining koans to complete this lesson.
+```
+
+## 🌍 Language Support
+
+SQL Koans supports both **English** and **Portuguese** to make learning accessible to more developers!
+
+### How it works
+- Use the `--lang` parameter to choose your language
+- **English** is the default: `npm test` or `npm test --lang=en`
+- **Portuguese**: `npm test --lang=pt`
+- All output is translated: lesson titles, koan names, hints, progress messages, and error messages
+- SQL syntax remains the same in both languages (it's SQL after all!)
+
+### Examples
+```bash
+# English
+npm test 01 --lang=en
+✓ 01 - SELECT Basics
+  ✓ Koan 1: Select all employees
+
+# Portuguese / Português
+npm test 01 --lang=pt
+✓ 01 - SELECT Básico
+  ✓ Koan 1: Selecionar todos os funcionários
 ```
 
 ## 🎯 Learning Tips
