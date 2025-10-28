@@ -17,11 +17,17 @@ npm test
 npm test 01        # Lesson 01
 npm test 5         # Lesson 05
 
+# Run with language parameter
+npm test 01 --lang=en   # English (default)
+npm test 01 --lang=pt   # Portuguese
+
 # View overall progress
 npm run progress
+npm run progress --lang=pt
 
 # Get hint for specific koan
 npm run hint 01 2  # Lesson 01, Koan 2
+npm run hint 01 2 --lang=pt
 ```
 
 ### Development
@@ -106,12 +112,40 @@ SQL files in `sql/*.sql` follow this pattern:
 
 The parser splits on `-- KOAN N:` markers to extract individual queries.
 
+## Internationalization (i18n)
+
+The project supports English and Portuguese through the `--lang` parameter:
+
+### Architecture
+- **Translation Module** (`lib/i18n.js`): Central translations for UI messages
+- **Koan Files**: Export functions that accept language parameter and return localized content
+- **Language Flow**: CLI → Runner → TestRunner → Koan files → Formatter
+
+### Koan File Structure
+Each koan file exports a function:
+```javascript
+module.exports = (lang = 'en') => {
+  const translations = {
+    en: { title: "...", description: "...", koans: [...] },
+    pt: { title: "...", description: "...", koans: [...] }
+  };
+  return translations[lang] || translations['en'];
+};
+```
+
+**Important**: Test logic (`test` functions) must be identical across languages. Only translate: `title`, `description`, `name`, `hint`, `expectedMessage`.
+
+### Adding a New Language
+1. Add translations to `lib/i18n.js` under a new language code
+2. Add language section to each koan file's `translations` object
+3. Update `isSupported()` check recognizes the new language code
+
 ## Adding New Lessons
 
-1. Create `koans/XX_lesson_name.js` with test definitions
+1. Create `koans/XX_lesson_name.js` as a function exporting translations for both languages
 2. Create `sql/XX_lesson_name.sql` with koan placeholders
 3. Ensure `queryIndex` in koan definitions matches SQL file order
-4. Test functions receive query results as array of objects
+4. Test functions receive query results as array of objects (language-independent logic)
 5. Runner automatically discovers new lesson files (no registration needed)
 
 ## Technical Details

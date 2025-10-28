@@ -3,6 +3,7 @@
 const DatabaseManager = require('./lib/database');
 const TestRunner = require('./lib/test-runner');
 const Formatter = require('./lib/formatter');
+const { t, isSupported } = require('./lib/i18n');
 
 /**
  * SQL Koans Runner
@@ -10,9 +11,10 @@ const Formatter = require('./lib/formatter');
  */
 
 class KoanRunner {
-  constructor() {
+  constructor(language = 'en') {
     this.db = null;
     this.testRunner = null;
+    this.language = language;
   }
 
   /**
@@ -22,9 +24,9 @@ class KoanRunner {
     try {
       this.db = new DatabaseManager();
       await this.db.initialize();
-      this.testRunner = new TestRunner(this.db);
+      this.testRunner = new TestRunner(this.db, this.language);
     } catch (error) {
-      Formatter.error(`Failed to initialize database: ${error.message}`);
+      Formatter.error(t('failedToInitialize', this.language, error.message), this.language);
       process.exit(1);
     }
   }
@@ -45,7 +47,7 @@ class KoanRunner {
     const lessonFile = this.getLessonFile(lessonNumber);
 
     if (!lessonFile) {
-      Formatter.error(`Lesson ${lessonNumber} not found`);
+      Formatter.error(t('lessonNotFound', this.language, lessonNumber), this.language);
       return;
     }
 
@@ -53,7 +55,7 @@ class KoanRunner {
       const result = this.testRunner.runLesson(lessonFile);
       this.displayLessonResult(result);
     } catch (error) {
-      Formatter.error(`Failed to run lesson: ${error.message}`);
+      Formatter.error(t('failedToRun', this.language, error.message), this.language);
     }
   }
 
@@ -63,7 +65,7 @@ class KoanRunner {
   runAll() {
     const results = this.testRunner.runAll();
 
-    Formatter.header();
+    Formatter.header(this.language);
 
     let totalPassed = 0;
     let totalKoans = 0;
@@ -78,17 +80,17 @@ class KoanRunner {
         totalPassed += result.passed;
         totalKoans += result.total;
       } else {
-        console.log(`✗ ${result.lesson} (Error: ${result.error})`);
+        console.log(`✗ ${result.lesson} (${t('error', this.language)}: ${result.error})`);
       }
     });
 
     const percentage = totalKoans > 0 ? Math.round((totalPassed / totalKoans) * 100) : 0;
-    Formatter.progress(totalPassed, totalKoans, percentage);
+    Formatter.progress(totalPassed, totalKoans, percentage, this.language);
 
     if (totalPassed < totalKoans) {
       const firstIncomplete = results.find(r => r.success && r.passed < r.total);
       if (firstIncomplete) {
-        Formatter.nextStep(`Continue with ${firstIncomplete.lesson}.sql`);
+        Formatter.nextStep(t('continueWith', this.language, `${firstIncomplete.lesson}.sql`), this.language);
       }
     }
   }
@@ -99,14 +101,14 @@ class KoanRunner {
   showProgress() {
     const results = this.testRunner.runAll();
 
-    Formatter.header();
-    Formatter.summary(results);
+    Formatter.header(this.language);
+    Formatter.summary(results, this.language);
 
     const totalPassed = results.reduce((sum, r) => sum + r.passed, 0);
     const totalKoans = results.reduce((sum, r) => sum + r.total, 0);
     const percentage = totalKoans > 0 ? Math.round((totalPassed / totalKoans) * 100) : 0;
 
-    Formatter.progress(totalPassed, totalKoans, percentage);
+    Formatter.progress(totalPassed, totalKoans, percentage, this.language);
   }
 
   /**
@@ -116,7 +118,7 @@ class KoanRunner {
     const lessonFile = this.getLessonFile(lessonNumber);
 
     if (!lessonFile) {
-      Formatter.error(`Lesson ${lessonNumber} not found`);
+      Formatter.error(t('lessonNotFound', this.language, lessonNumber), this.language);
       return;
     }
 
@@ -128,10 +130,11 @@ class KoanRunner {
         info.lessonTitle,
         info.koanName,
         info.hint,
-        info.expectedMessage
+        info.expectedMessage,
+        this.language
       );
     } catch (error) {
-      Formatter.error(error.message);
+      Formatter.error(error.message, this.language);
     }
   }
 
@@ -139,25 +142,26 @@ class KoanRunner {
    * Exibe resultado de uma lição
    */
   displayLessonResult(result) {
-    Formatter.header();
-    Formatter.lessonTitle(result.title, result.description);
+    Formatter.header(this.language);
+    Formatter.lessonTitle(result.title, result.description, this.language);
 
     result.koans.forEach(koan => {
       if (koan.passed) {
-        Formatter.koanPassed(koan.name);
+        Formatter.koanPassed(koan.name, this.language);
       } else if (koan.notAttempted) {
-        Formatter.koanNotAttempted(koan.name, koan.hint);
+        Formatter.koanNotAttempted(koan.name, koan.hint, this.language);
       } else if (koan.error) {
-        Formatter.sqlError(koan.name, koan.error);
+        Formatter.sqlError(koan.name, koan.error, this.language);
       } else {
-        Formatter.koanFailed(koan.name, koan.message, koan.hint);
+        Formatter.koanFailed(koan.name, koan.message, koan.hint, this.language);
       }
     });
 
     Formatter.lessonProgress(
       this.extractLessonNumber(result.title),
       result.passed,
-      result.total
+      result.total,
+      this.language
     );
 
     // Sugere próxima lição se completou esta
@@ -167,7 +171,7 @@ class KoanRunner {
       const lessons = TestRunner.getAvailableLessons();
 
       if (lessons.some(l => l.startsWith(nextLesson))) {
-        Formatter.nextStep(`Try lesson ${nextLesson}`);
+        Formatter.nextStep(t('tryLesson', this.language, nextLesson), this.language);
       }
     }
   }
@@ -193,30 +197,35 @@ class KoanRunner {
   /**
    * Exibe mensagem de ajuda
    */
-  static showHelp() {
+  static showHelp(lang = 'en') {
     console.log(`
-SQL Koans - Learn SQL through practice
+${t('helpDescription', lang)}
 
-Usage:
-  npm test              Run all koans
-  npm test <number>     Run specific lesson (e.g., npm test 01)
-  npm run progress      Show overall progress
-  npm run hint <lesson> <koan>  Show hint for specific koan
+${t('helpUsage', lang)}:
+  npm test                       ${t('helpRunAll', lang)}
+  npm test <number>              ${t('helpRunSpecific', lang)}
+  npm run progress               ${t('helpProgress', lang)}
+  npm run hint <lesson> <koan>   ${t('helpHint', lang)}
 
-Examples:
-  npm test              # Run all lessons
-  npm test 01           # Run lesson 01
-  npm test 5            # Run lesson 05
-  npm run progress      # Show progress summary
-  npm run hint 01 2     # Show hint for lesson 01, koan 2
+${t('helpExamples', lang)}:
+  npm test                       # ${t('helpRunAll', lang)}
+  npm test 01                    # ${t('helpRunSpecific', lang).replace('(e.g., npm test 01)', '- lesson 01')}
+  npm test 01 --lang=pt          # Run lesson 01 in Portuguese
+  npm test 5                     # Run lesson 05
+  npm run progress               # ${t('helpProgress', lang)}
+  npm run hint 01 2              # ${t('helpHint', lang).replace('Show hint for specific koan', 'lesson 01, koan 2')}
 
-To get started:
-  1. Open sql/01_select_basics.sql
-  2. Write your SQL queries
-  3. Run: npm test 01
-  4. Fix any failures and repeat!
+Language options:
+  --lang=en                      English (default)
+  --lang=pt                      Portuguese
 
-Learn more: https://github.com/yourusername/sqlkoans
+${t('helpToGetStarted', lang)}:
+  1. ${t('helpStep1', lang)}
+  2. ${t('helpStep2', lang)}
+  3. ${t('helpStep3', lang)}
+  4. ${t('helpStep4', lang)}
+
+${t('helpLearnMore', lang)}: https://github.com/yourusername/sqlkoans
 `);
   }
 }
@@ -227,15 +236,29 @@ Learn more: https://github.com/yourusername/sqlkoans
 async function main() {
   const args = process.argv.slice(2);
 
+  // Parse language parameter
+  let language = 'en';
+  const langArgIndex = args.findIndex(arg => arg.startsWith('--lang='));
+  if (langArgIndex !== -1) {
+    const langArg = args[langArgIndex];
+    language = langArg.split('=')[1] || 'en';
+    if (!isSupported(language)) {
+      console.error(`Unsupported language: ${language}. Using English as default.`);
+      language = 'en';
+    }
+    // Remove language arg from args
+    args.splice(langArgIndex, 1);
+  }
+
   // Parse argumentos
   const command = args[0];
 
   if (command === '--help' || command === '-h') {
-    KoanRunner.showHelp();
+    KoanRunner.showHelp(language);
     return;
   }
 
-  const runner = new KoanRunner();
+  const runner = new KoanRunner(language);
   await runner.initialize();
 
   try {
@@ -246,7 +269,7 @@ async function main() {
       const koan = args[2] || '1';
 
       if (!lesson) {
-        Formatter.error('Please specify lesson number: npm run hint <lesson> <koan>');
+        Formatter.error(t('pleaseSpecifyLesson', language), language);
       } else {
         runner.showHint(parseInt(lesson), koan);
       }
@@ -255,8 +278,8 @@ async function main() {
       const lessonNumber = parseInt(command);
 
       if (isNaN(lessonNumber)) {
-        Formatter.error(`Invalid lesson number: ${command}`);
-        KoanRunner.showHelp();
+        Formatter.error(t('invalidLessonNumber', language, command), language);
+        KoanRunner.showHelp(language);
       } else {
         runner.runLesson(lessonNumber);
       }
@@ -271,7 +294,7 @@ async function main() {
 
 // Trata erros não capturados
 process.on('uncaughtException', (error) => {
-  Formatter.error(`Unexpected error: ${error.message}`);
+  Formatter.error(t('unexpectedError', 'en', error.message), 'en');
   process.exit(1);
 });
 
